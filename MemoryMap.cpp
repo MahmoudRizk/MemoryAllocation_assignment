@@ -20,6 +20,11 @@ Node::Node(int BAddr, int s)
     size=s;
     final_address=base_address+size;
 }
+Node::Node(string n, int s)
+{
+  name=n;
+  size=s;
+}
 string Node::get_name()
 {return name;}
 int Node::get_base_address()
@@ -128,6 +133,30 @@ void HoleTable::print_table()
       cout<<endl;
    }
 }
+
+ Node HoleTable::search(int BAddr)
+ {
+     list<Node>::iterator i;
+     i=table.begin();
+     for(i;i!=table.end();i++)
+     {
+         if(i->get_base_address()==BAddr) return *i;
+     }
+
+       return  Node(-1,-1);
+
+ }
+
+ int HoleTable::search_by_size(int s)
+ {
+    list<Node>::iterator i;
+    i=table.begin();
+    for(i;i!=table.end();i++)
+    {
+       if(i->get_size()>=s) return i->get_base_address();
+    }
+      return -1;
+ }
 ////////////////////////////////////////////////////////////////////////////////
 /*******************************************************************************/
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,3 +189,67 @@ void ProcessesTable::print_table()
      cout<<endl;
   }
 }
+
+bool ProcessesTable::search_base_address(int BAddr)
+{
+   list<Node>::iterator i ;
+   i=table.begin();
+   for(i;i!=table.end();i++)
+   {
+     if(i->get_base_address()==BAddr) return true;
+   }
+     return false;
+}
+////////////////////////////////////////////////////////////////////////////////
+/*******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
+{
+   int base_address_flag;
+   base_address_flag=h1.search_by_size(n.get_size());
+   if(base_address_flag>0)
+   {
+   n.set_base_address(base_address_flag);
+   h1.deallocate(base_address_flag,n.get_size());
+   t1.allocate(n.get_name(),base_address_flag,n.get_size());
+   }
+   else
+   {
+     cout<<"Error: no enough space"<<endl;
+   }
+
+}
+
+void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, Node n)
+{
+   bool flag;
+   flag=t1.search_base_address(n.get_base_address());
+   if(flag)
+   {
+   t1.deallocate(n.get_base_address());
+   h1.allocate(n.get_base_address(),n.get_size());
+   }
+   else cout<<"Error: Process not foud"<<endl;
+}
+
+void initial_Processes_table_filling(HoleTable h1, ProcessesTable &t1, int memory_size)
+{
+      int BAddr=0;
+     while(BAddr<memory_size)
+     {
+        /*Old processes creation*/
+        Node n(0,0);
+        n=h1.search(BAddr);
+        if(n.get_base_address()<0)
+        {
+           t1.allocate("Px",BAddr,1);
+           BAddr++;
+        }
+        else
+        {
+          BAddr=BAddr+n.get_size();
+        }
+     }
+}
+
+

@@ -13,6 +13,7 @@ class Node
     public:
     Node(std::string n, int BAddr, int s);
     Node(int BAddr, int s);
+    Node(string n,int s);
     std::string get_name();
     int get_base_address();
     int get_size();
@@ -33,6 +34,8 @@ public:
   void deallocate(int base_address,int size);
   int get_table_size();
   void print_table();
+  Node search(int BAddr);
+  int  search_by_size(int s);
 
 };
 
@@ -43,9 +46,14 @@ class ProcessesTable
   void allocate(string n, int BAddr, int size);
   void deallocate(int BAddr);
   void print_table();
+  bool search_base_address(int BAddr);
 
 
 };
+class Memory{};  //Under construction :)
 
-class Memory{};
+void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n);
+void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, Node n);
+void initial_Processes_table_filling(HoleTable h1, ProcessesTable &t1, int memory_size);
+
 #endif // MEMORYMAP_INCLUDED
