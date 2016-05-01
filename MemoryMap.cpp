@@ -71,7 +71,9 @@ void HoleTable::merge()
 {
    list<Node>::iterator i_merge, j_merge;
    i_merge=table.begin();
-   j_merge=++table.begin();
+   j_merge=table.begin();
+   j_merge++;
+
    for(j_merge;j_merge!=(++table.end());j_merge++)
    {
        if(i_merge->get_final_address()==j_merge->get_base_address())
@@ -81,6 +83,7 @@ void HoleTable::merge()
             table.erase(j_merge);
             j_merge--;
        }
+       i_merge++;
    }
 }//merge two consecutive holes together
 
