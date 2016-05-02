@@ -28,8 +28,9 @@ class HoleTable
 {
   list<Node> table;
   void sort();
-  void merge();
+
 public:
+  void merge();
   void allocate(int base_address, int size);
   void deallocate(int base_address,int size);
   int get_table_size();
@@ -50,14 +51,20 @@ class ProcessesTable
   void deallocate(int BAddr);
   void print_table();
   bool search_base_address(int BAddr);
+  Node search_base_address_2(int BAddr);
+  int  get_table_size();
 
 
 
 };
 class Memory{};  //Under construction :)
 
-void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n);
+int table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n);
 void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, Node n);
+void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, int BAddr);
 void initial_Processes_table_filling(HoleTable h1, ProcessesTable &t1, int memory_size);
-
+void holes_initialize(HoleTable &h1);
+void input_processes(list<Node> &list_processes);
+void process_processes(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1);
+void tables_handler(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1);
 #endif // MEMORYMAP_INCLUDED

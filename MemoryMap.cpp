@@ -86,7 +86,9 @@ void HoleTable::merge()
             i_merge->set_final_address(j_merge->get_final_address());
             i_merge->update_size();
             table.erase(j_merge);
-            j_merge--;
+            //j_merge--;
+            i_merge=table.begin();
+            j_merge=table.begin()++;
        }
        i_merge++;
    }
@@ -261,10 +263,30 @@ bool ProcessesTable::search_base_address(int BAddr)
    }
      return false;
 }
+Node ProcessesTable::search_base_address_2(int BAddr)
+{
+  list<Node>::iterator i;
+  i=table.begin();
+  for(i;i!=table.end();i++)
+  {
+     if(i->get_base_address()==BAddr)
+     {
+        return *i;
+     }
+  }
+
+  return Node("XXXX",-1,-1);;
+
+}
+
+int ProcessesTable::get_table_size()
+{
+    return table.size();
+}
 ////////////////////////////////////////////////////////////////////////////////
 /*******************************************************************************/
 ////////////////////////////////////////////////////////////////////////////////
-void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
+int table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
 {
    int base_address_flag;
    //base_address_flag=h1.get_available_size(n.get_size());
@@ -274,10 +296,12 @@ void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
    //n.set_base_address(base_address_flag);
    h1.deallocate(base_address_flag,n.get_size());
    t1.allocate(n.get_name(),base_address_flag,n.get_size());
+   return 0;
    }
    else
    {
-     cout<<"Error: no enough space"<<endl;
+     //cout<<"Error: no enough space"<<endl;
+     return -1;
    }
 
 }
@@ -291,8 +315,22 @@ void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, Node n)
    t1.deallocate(n.get_base_address());
    h1.allocate(n.get_base_address(),n.get_size());
    }
-   else cout<<"Error: Process not foud"<<endl;
+   else cout<<"Error:Process not foud"<<endl;
 }
+/////////////////////////////////////////////////////////////////////////////////
+void table_sync_delete_process(HoleTable &h1, ProcessesTable &t1, int BAddr)
+{
+   // bool flag;
+   Node N("XXXX",-1,-1);
+   N=t1.search_base_address_2(BAddr);
+   if(N.get_size()>0)
+   {
+   t1.deallocate(N.get_base_address());
+   h1.allocate(N.get_base_address(),N.get_size());
+   }
+   else cout<<"Error:Process not foud"<<endl;
+}
+//////////////////////////////////////////////////////////////////////////////////
 
 void initial_Processes_table_filling(HoleTable h1, ProcessesTable &t1, int memory_size)
 {
@@ -312,6 +350,136 @@ void initial_Processes_table_filling(HoleTable h1, ProcessesTable &t1, int memor
           BAddr=BAddr+n.get_size();
         }
      }
+}
+
+void holes_initialize(HoleTable &h1)
+{
+    /**************************************************************************************/
+    /*The availabe holes(free spaces) entered by the user at the beginning of the program*/
+    /*************************************************************************************/
+
+    int holes_number;
+    cout<<"Enter number of holes:"<<endl;
+    cin>>holes_number;
+    for(int i=0;i<holes_number;i++)
+    {
+      int BAddr, hole_size;
+      cout<<"Enter base address:"<<endl;
+      cin>>BAddr;
+      cout<<"Enter hole size:"<<endl;
+      cin>>hole_size;
+      h1.allocate(BAddr,hole_size);
+    }
+
+}
+
+void input_processes(list<Node> &list_processes)
+{
+    /****************************************************************/
+    /*Create a list of input processes which is entered by the user*/
+    /***************************************************************/
+   cout<<"Enter the number of processes:"<<endl;
+   int processes_number;
+   cin>>processes_number;
+   for(int i=0;i<processes_number;i++)
+   {
+     string process_name;
+     cout<<"Enter the process name:"<<endl;
+     cin>>process_name;
+     int process_size;
+     cout<<"Enter process size:"<<endl;
+     cin>>process_size;
+     Node n(process_name,process_size);
+     list_processes.push_back(n);
+   }
+
+}
+
+void process_processes(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1)
+{
+      /***************************************************************/
+      /*Take the process from the list_processes and fit them to the
+        Processes table table*/
+        /*if the process went from the list_processes to the table successfully,
+          it will be deleted from the list_processes*/
+         /*The reason why the process won't succed to reach Processes table is
+             MEMORY shortage*/
+             /*MEMORY SHORTAGE IS SOLVED IN ANOTHER FUNCTION (tables handler)*/
+      /***************************************************************/
+
+   list<Node>::iterator i_list_processes=list_processes.begin();
+    while(i_list_processes!=list_processes.end() && list_processes.size()!=0)
+   {
+        Node process=*i_list_processes;
+        int flag;
+        process.set_base_address(h1.search_first_fit(process.get_size()));
+        flag=table_sync_add_process(h1, t1, process);
+        if(flag==0)
+        {
+           list_processes.erase(i_list_processes);
+           i_list_processes=list_processes.begin();
+        }
+        else
+        i_list_processes++;
+   }
+   /*
+     cout<<"======================================="<<endl;
+     h1.print_table();
+     cout<<"======================================="<<endl;
+     t1.print_table();
+   */
+}
+
+void tables_handler(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1)
+{
+while(1)
+{
+     mylabel:
+       process_processes(list_processes,h1,t1);
+       h1.print_table();
+       t1.print_table();
+       if(list_processes.size()>=1)
+       {
+         cout<<"MEMORY SHORTAGE:these processes weren't allocated"<<endl;
+         cout<<endl<<"Do you want to free some space in memory?"<<" "<<"(Y/n)"<<"  ";
+         string decesion;
+         cin>>decesion;
+         if(decesion=="n" || decesion=="N") break;
+         else if(decesion=="y" || decesion=="Y")
+         {
+             while(1)
+             {
+               cout<<"Enter the PROCESS Base_Address:"<<endl;
+               int BAddr;
+               cin>>BAddr;
+               table_sync_delete_process(h1,t1,BAddr);
+               h1.merge();
+
+               if(t1.get_table_size()>=1)
+               {
+               cout<<endl<<"Do you want to delete another process?"<<" "<<"(Y/n)"<<"  ";
+               string decesion1;
+               cin>>decesion1;
+               if(decesion1=="n" || decesion1=="N") break;
+               }
+               else
+               {
+                 cout<<endl<<"No PROCESSES to delete any more";
+                 break;
+               }
+
+             }
+             if(list_processes.size()>=1)
+             {
+                goto mylabel;
+             }
+         }
+
+       }
+       break;
+}
+
+
 }
 
 
