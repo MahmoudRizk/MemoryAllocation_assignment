@@ -147,7 +147,7 @@ void HoleTable::print_table()
 
  }
 
- int HoleTable::search_by_size(int s)
+ int HoleTable::get_available_size(int s)
  {
     list<Node>::iterator i;
     i=table.begin();
@@ -156,6 +156,67 @@ void HoleTable::print_table()
        if(i->get_size()>=s) return i->get_base_address();
     }
       return -1;
+ }
+ int HoleTable::search_first_fit(int s)
+ {
+   list<Node>::iterator i;
+   i=table.begin();
+   if(table.size()>1)
+   {
+       for(i;i!=table.end();i++)
+       {
+           if(i->get_size()>=s) return i->get_base_address();
+       }
+           return -1;
+   }
+   else return -1;
+ }
+ int HoleTable::search_worst_fit(int s)
+ {
+    list<Node>::iterator i;
+    i=table.begin();
+    int temp_base_address=-1;
+    int temp_worst_size=0;
+    if(table.size()>1)
+    {
+        for(i;i!=table.end();i++)
+        {
+            if(i->get_size()>temp_worst_size)
+            {
+              temp_worst_size=i->get_size();
+              temp_base_address=i->get_base_address();
+            }
+        }
+    }
+    if(temp_worst_size>=s)
+    return temp_base_address;
+    else
+    return -1;
+ }
+ int HoleTable::search_best_fit(int s)
+ {
+    list<Node>::iterator i;
+    i=table.begin();
+    int temp_base_address=-1;
+    int temp_best_size=99999999;
+    if(table.size()>1)
+    {
+    for(i;i!=table.end();i++)
+    {
+
+      if(i->get_size()>=s)
+      {
+         if(i->get_size()<temp_best_size)
+         {
+            temp_base_address=i->get_base_address();
+            temp_best_size=i->get_size();
+         }
+         if(i->get_size()==s) return i->get_base_address();
+      }
+    }
+    return temp_base_address;
+    }
+    else return -1;
  }
 ////////////////////////////////////////////////////////////////////////////////
 /*******************************************************************************/
@@ -206,10 +267,11 @@ bool ProcessesTable::search_base_address(int BAddr)
 void table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
 {
    int base_address_flag;
-   base_address_flag=h1.search_by_size(n.get_size());
-   if(base_address_flag>0)
+   //base_address_flag=h1.get_available_size(n.get_size());
+   base_address_flag=n.get_base_address();
+   if(base_address_flag>=0)
    {
-   n.set_base_address(base_address_flag);
+   //n.set_base_address(base_address_flag);
    h1.deallocate(base_address_flag,n.get_size());
    t1.allocate(n.get_name(),base_address_flag,n.get_size());
    }

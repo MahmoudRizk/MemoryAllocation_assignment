@@ -35,7 +35,10 @@ public:
   int get_table_size();
   void print_table();
   Node search(int BAddr);
-  int  search_by_size(int s);
+  int  get_available_size(int s);
+  int  search_first_fit(int s);
+  int  search_worst_fit(int s);
+  int  search_best_fit(int s);
 
 };
 
@@ -47,6 +50,7 @@ class ProcessesTable
   void deallocate(int BAddr);
   void print_table();
   bool search_base_address(int BAddr);
+
 
 
 };
