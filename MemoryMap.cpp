@@ -2,7 +2,7 @@
 #include <list>
 #include <string>
 #include <iostream>
-
+extern int algorithm_mode;
 
 Node::Node(string n, int BAddr, int s)
 {
@@ -163,7 +163,7 @@ void HoleTable::print_table()
  {
    list<Node>::iterator i;
    i=table.begin();
-   if(table.size()>1)
+   if(table.size()>=1)
    {
        for(i;i!=table.end();i++)
        {
@@ -412,7 +412,9 @@ void process_processes(list<Node> &list_processes, HoleTable &h1, ProcessesTable
    {
         Node process=*i_list_processes;
         int flag;
-        process.set_base_address(h1.search_first_fit(process.get_size()));
+        if(algorithm_mode==1) process.set_base_address(h1.search_first_fit(process.get_size()));
+        if(algorithm_mode==2) process.set_base_address(h1.search_best_fit(process.get_size()));
+        if(algorithm_mode==3) process.set_base_address(h1.search_worst_fit(process.get_size()));
         flag=table_sync_add_process(h1, t1, process);
         if(flag==0)
         {
@@ -436,7 +438,9 @@ while(1)
 {
      mylabel:
        process_processes(list_processes,h1,t1);
+       cout<<"======================================="<<endl;
        h1.print_table();
+       cout<<"======================================="<<endl;
        t1.print_table();
        if(list_processes.size()>=1)
        {
