@@ -1,0 +1,18 @@
+# depslib dependency file v1.0
+1462454808 source:/home/mahmoudrizk/Desktop/OS_Memory_Assignment/OS_Memory_Assignment/main.cpp
+	<iostream>
+	<list>
+	<vector>
+	<string>
+	"MemoryMap.h"
+
+1462453982 /home/mahmoudrizk/Desktop/OS_Memory_Assignment/OS_Memory_Assignment/MemoryMap.h
+	<list>
+	<string>
+
+1462625329 source:/home/mahmoudrizk/Desktop/OS_Memory_Assignment/OS_Memory_Assignment/MemoryMap.cpp
+	"MemoryMap.h"
+	<list>
+	<string>
+	<iostream>
+

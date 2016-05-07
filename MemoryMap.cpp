@@ -4,6 +4,7 @@
 #include <iostream>
 extern int algorithm_mode;
 
+Node::Node(){;}
 Node::Node(string n, int BAddr, int s)
 {
    /*USED for NODE of type PROCESS*/
@@ -286,6 +287,73 @@ int ProcessesTable::get_table_size()
 ////////////////////////////////////////////////////////////////////////////////
 /*******************************************************************************/
 ////////////////////////////////////////////////////////////////////////////////
+void Memory::update_memory(HoleTable h1, ProcessesTable t1)
+{
+   /*Adding Holes to memory array*/
+  list<Node>::iterator h1_i;
+  h1_i=h1.table.begin();
+  for(h1_i;h1_i!=h1.table.end();h1_i++)
+  {
+    int size=h1_i->get_size();
+    int memory_index=h1_i->get_base_address();
+    memory[h1_i->get_base_address()]=*h1_i;
+    while(size>1)
+    {
+     memory_index++;
+     memory[memory_index]=*h1_i;
+     size--;
+    }
+  }
+  /*Adding Processes to memory array*/
+  list<Node>::iterator t1_i;
+  t1_i=t1.table.begin();
+  for(t1_i;t1_i!=t1.table.end();t1_i++)
+  {
+     int size=t1_i->get_size();
+     int memory_index=t1_i->get_base_address();
+     memory[t1_i->get_base_address()]=*t1_i;
+     while(size>1)
+     {
+      memory_index++;
+      memory[memory_index]=*t1_i;
+      size--;
+     }
+  }
+
+}
+
+void Memory::print_memory_by_name()
+{
+  cout<<"=======================================";
+  for(int i=0;i<10;i++)
+  {
+    cout<<memory[i].get_name()<<endl;
+  }
+  cout<<"=======================================";
+
+}
+
+void Memory::print_memory_in_detail()
+{
+   cout<<"       ========================"<<endl;
+   for(int i=0;i<10;i++)
+   {
+
+     cout<<"       "<<"|"<<" -------------------"<<"  |"<<endl;
+     cout<<"       "<<"|"<<" "<<"Segment:"<<i<<"            |"<<endl;
+     cout<<"       "<<"|"<<"                      |"<<endl;
+     cout<<"       "<<"|"<<" "<<"Name:"<<memory[i].get_name()<<"              |"<<endl;
+     cout<<"       "<<"|"<<" "<<"Base_address:"<<memory[i].get_base_address()<<"       |"<<endl;
+     cout<<"       "<<"|"<<" "<<"Size:"<<memory[i].get_size()<<"               |"<<endl;
+     cout<<"       "<<"|"<<" "<<"Final_address:"<<memory[i].get_final_address()<<"      |"<<endl;
+     cout<<"       "<<"|"<<"                      |"<<endl;
+     //cout<<endl;
+   }
+   cout<<"       ========================"<<endl;
+}
+///////////////////////////////////////////////////////////////////////////////
+/*******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
 int table_sync_add_process(HoleTable &h1, ProcessesTable &t1, Node &n)
 {
    int base_address_flag;
@@ -432,19 +500,23 @@ void process_processes(list<Node> &list_processes, HoleTable &h1, ProcessesTable
    */
 }
 
-void tables_handler(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1)
+void tables_handler(list<Node> &list_processes, HoleTable &h1, ProcessesTable &t1, Memory &memory)
 {
 while(1)
 {
      mylabel:
        process_processes(list_processes,h1,t1);
+       /*
        cout<<"======================================="<<endl;
        h1.print_table();
        cout<<"======================================="<<endl;
        t1.print_table();
+       */
+       memory.update_memory(h1,t1);
+       memory.print_memory_in_detail();
        if(list_processes.size()>=1)
        {
-         cout<<"MEMORY SHORTAGE:these processes weren't allocated"<<endl;
+         cout<<"MEMORY SHORTAGE:some processes weren't allocated"<<endl;
          cout<<endl<<"Do you want to free some space in memory?"<<" "<<"(Y/n)"<<"  ";
          string decesion;
          cin>>decesion;
@@ -468,7 +540,7 @@ while(1)
                }
                else
                {
-                 cout<<endl<<"No PROCESSES to delete any more";
+                 cout<<endl<<"No PROCESSES to delete any more"<<endl;
                  break;
                }
 
